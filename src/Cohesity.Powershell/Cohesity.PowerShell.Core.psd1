@@ -71,6 +71,7 @@ FunctionsToExport = @(
                       'Get-CohesityOrganization',
                       'Get-CohesityProtectionJobStatus',
                       'New-CohesityActiveDirectory',
+                      'New-CohesityProtectionPolicy',
                       'Recover-CohesityBackupToView',
                       'Register-CohesityProtectionSourceHyperV',
                       'Register-CohesityProtectionSourceO365',
