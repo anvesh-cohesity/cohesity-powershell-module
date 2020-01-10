@@ -68,15 +68,19 @@ function Get-CohesityVlan {
         $vlanList = Invoke-RestApi -Method 'Get' -Uri $url -Headers $headers
         $vlanList
 
-        if ($Global:CohesityAPIError) {
-            if ($Global:CohesityAPIError.StatusCode -eq 'NotFound') {
+        if ($null -eq $vlanList) {
+            if ($Global:CohesityAPIError) {
+                if ($Global:CohesityAPIError.StatusCode -eq 'NotFound') {
+                    $errorMsg = "Vlan doesn't exist."
+                    Write-Warning $errorMsg
+                } else {
+                    $errorMsg = "Failed to fetch Vlan information with an error : " + $Global:CohesityAPIError
+                }
+            } else {
                 $errorMsg = "Vlan doesn't exist."
                 Write-Warning $errorMsg
-                CSLog -Message $errorMsg
-            } else {
-                $errorMsg = "Failed to fetch Vlan information with an error : " + $Global:CohesityAPIError
-                CSLog -Message $errorMsg
             }
+            CSLog -Message $errorMsg
         }
     } # End of process
 } # End of function

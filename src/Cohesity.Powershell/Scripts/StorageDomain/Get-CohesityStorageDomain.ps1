@@ -66,9 +66,18 @@ function Get-CohesityStorageDomain {
         $StorageDomainList
 
         if ($null -eq $StorageDomainList) {
-            $msg = "Storage domain doesn't exist."
-            Write-Warning $msg
-            CSLog -Message $msg
+            if ($Global:CohesityAPIError) {
+                if ($Global:CohesityAPIError.StatusCode -eq 'NotFound') {
+                    $errorMsg = "Storage domain (View Box) doesn't exist."
+                    Write-Warning $errorMsg
+                } else {
+                    $errorMsg = "Failed to fetch Storage Domain (View Box) information with an error : " + $Global:CohesityAPIError
+                }
+            } else {
+                $errorMsg = "Storage domain (View Box) doesn't exist."
+                Write-Warning $errorMsg
+            }
+            CSLog -Message $errorMsg
         }
     } # End of process
 } # End of function

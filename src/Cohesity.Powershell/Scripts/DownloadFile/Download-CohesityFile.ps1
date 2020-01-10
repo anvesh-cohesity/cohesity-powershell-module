@@ -104,9 +104,17 @@ function Download-CohesityFile {
                 CSLog -Message $warnMsg
             }
         } else {
-            $warnMsg = "No files found with specified name."
-            Write-Warning $warnMsg
-            CSLog -Message $warnMsg
+            if ($Global:CohesityAPIError) {
+                if ($Global:CohesityAPIError.StatusCode -ne 'Unauthorized') {
+                    $errorMsg = "Failed to fetch information for the file '$FileName'."
+                    Write-Error $errorMsg
+                    CSLog -Message $errorMsg
+                }
+            } else {
+                $warnMsg = "No files found with specified name."
+                Write-Warning $warnMsg
+                CSLog -Message $warnMsg
+            }
         }
     } # End of process
 } # End of function

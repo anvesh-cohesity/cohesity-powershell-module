@@ -65,13 +65,18 @@ function Set-CohesityStorageDomain {
 
     Process {
         $payload = $null
+        $domainUrl = $server + '/irisservices/api/v1/public/viewBoxes'
+        $headers = @{'Authorization' = 'Bearer ' + $token }
 
         # Check if the storage domain with specified name already exist
         if ($NewDomainName) {
-            $isDomainExist = Get-CohesityStorageDomain -Name $NewDomainName -WarningAction SilentlyContinue
+            $url = $domainUrl + '?names=' + $NewDomainName + '&allUnderHierarchy=true'
+            $isDomainExist = Invoke-RestApi -Method 'Get' -Uri $url -Headers $headers
 
             if ($isDomainExist) {
                 throw "Storage Domain with name '$NewDomainName' already exists."
+            } elseif ($Global:CohesityAPIError.StatusCode -eq 'Unauthorized'){
+                return
             }
         }
 
@@ -81,14 +86,24 @@ function Set-CohesityStorageDomain {
 
         # Construct URL & header
         $StorageDomainUrl = $server + '/irisservices/api/v1/public/viewBoxes'
-        $headers = @{'Authorization' = 'Bearer ' + $token }
 
         if ($null -eq $StorageDomain) {
             $getUrl = $StorageDomainUrl + '?names=' + $Name + '&allUnderHierarchy=true'
             $domainObj = Invoke-RestApi -Method 'Get' -Uri $getUrl -Headers $headers
 
             if ($null -eq $domainObj) {
-                Write-Warning "Storage Domain '$Name' doesn't exists."
+                if ($Global:CohesityAPIError) {
+                    if ($Global:CohesityAPIError.StatusCode -eq 'NotFound') {
+                        $errorMsg = "Storage domain (View Box) '$Name' doesn't exists."
+                        Write-Warning $errorMsg
+                    } else {
+                        $errorMsg = "Failed to fetch Storage Domain (View Box) information with an error : " + $Global:CohesityAPIError
+                    }
+                } else {
+                    $errorMsg = "Storage domain (View Box) '$Name' doesn't exist."
+                    Write-Warning $errorMsg
+                }
+                CSLog -Message $errorMsg
             }
         }
 
